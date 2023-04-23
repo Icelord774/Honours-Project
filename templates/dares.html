@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dares of Eternity Stats</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='page.css') }}">
+    <script>
+        function resetPage() {
+            location.reload(true);
+        }
+        window.onunload = resetPage;
+    </script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+<h1 class="title">Dares of Eternity Stats Data</h1>
+<div class="links">
+<a class="section-title" href="#link">Links</a>
+<a class="section-link" href="#section1">Dares of Eternity Line Graph</a>
+<a class="section-link" href="#section2">Dares of Eternity Bar Chart</a>
+<a class="section-link" href="#section3">Dares of Eternity Resurrections</a>
+<a class="section-link" href="#section4">Dares of Eternity Primary Weapons</a>
+<a class="section-link" href="#section5">Dares of Eternity Secondary Weapons</a>
+<a class="section-link" href="#section6">Dares of Eternity Heavy Weapons</a>
+<div/>
+<table>
+  <tr>
+    <th>Date</th>
+    <th>Kills</th>
+    <th>Deaths</th>
+    <th>Assists</th>
+    <th>K/D Ratio</th>
+    <th>K/D/A Ratio</th>
+  </tr>
+  {% for row in dares_values %}
+  <tr>
+    <td>{{ row[0] }}</td>
+    <td>{{ row[1]|float|round(2) }}</td>
+    <td>{{ row[2]|float|round(2) }}</td>
+    <td>{{ row[3]|float|round(2) }}</td>
+    <td>{{ row[4]|float|round(2) }}</td>
+    <td>{{ row[5]|float|round(2) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<form action="{{ url_for('download_table') }}" method="post">
+  <input type="hidden" name="table_values" value="{{ dares_values }}">
+  <button type="submit">Download Table</button>
+</form>
+</body>
+<h1 class="title">Dares of Eternity Stats Line Graph</h1>
+<section id="section1">
+{% if dares_values %}
+  <canvas id="dares-chart"></canvas>
+{% endif %}
+{% if dares_values %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+  <script>
+    // get the canvas element
+    var daresChart = document.getElementById('dares-chart').getContext('2d');
+
+    // create the chart
+    var myChart = new Chart(daresChart, {
+      type: 'line',
+      data: {
+        labels: [{% for row in dares_values %}"{{ row[0] }}", {% endfor %}],
+        datasets: [{
+          label: 'Kills',
+          data: [{% for row in dares_values %}{{ row[1] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgb(248,105,135)',
+          borderWidth: 1
+        }, {
+          label: 'Deaths',
+          data: [{% for row in dares_values %}{{ row[2] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        },
+        {
+          label: 'Assists',
+          data: [{% for row in dares_values %}{{ row[3] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgb(225,3,3)',
+          borderWidth: 1
+        },
+        {
+          label: 'K/D Ratio',
+          data: [{% for row in dares_values %}{{ row[4] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgb(54,235,69)',
+          borderWidth: 1
+        },
+        {
+          label: 'K/D/A Ratio',
+          data: [{% for row in dares_values %}{{ row[5] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgb(184,54,235)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+  </script>
+
+{% endif %}
+
+  <h4 class="subtitle">Dares of Eternity Stats Bar Chart</h4>
+  <section id="section2">
+  <canvas id="dares-bar-chart"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    var daresChart = document.getElementById('dares-bar-chart').getContext('2d');
+    var chart = new Chart(daresChart, {
+      type: 'bar',
+      data: {
+        labels: ['Kills', 'Deaths', 'Assists'],
+        datasets: [{
+          label: 'All Dares of Eternity Values',
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(153, 102, 255, 0.2)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)'
+          ],
+          borderWidth: 1,
+          data: [
+              {{ alldares_values[0] }},
+              {{ alldares_values[1] }},
+              {{ alldares_values[2] }},
+          ]
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+  </script>
+
+<h4 class="subtitle">Dares of Eternity Stats Resurrections</h4>
+<section id="section3">
+<canvas id="rez-pie-chart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var daresChart = document.getElementById('rez-pie-chart').getContext('2d');
+  var chart = new Chart(daresChart, {
+    type: 'pie',
+    data: {
+      labels: ['Resurrections Performed', 'Resurrections Received'],
+      datasets: [{
+        label: 'Resurrection Values',
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+        ],
+        borderWidth: 1,
+        data: [
+            {{ alldares_values[6] }},
+            {{ alldares_values[7] }},
+        ]
+      }]
+    },
+    options: {}
+  });
+</script>
+
+<h4 class="subtitle">Dares of Eternity Stats Primary Weapons</h4>
+<section id="section4">
+<canvas id="primary-pie-chart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var daresChart = document.getElementById('primary-pie-chart').getContext('2d');
+  var chart = new Chart(daresChart, {
+    type: 'pie',
+    data: {
+      labels: ['Auto Rifle', 'Bow', 'Hand Cannon', 'Pulse Rifle','Scout Rifle', 'Submachinegun', 'Sidearm'],
+      datasets: [{
+        label: 'Primary Weapon Kills',
+        backgroundColor: [
+          'rgb(3,252,37)',
+          'rgb(11,46,222)',
+          'rgb(144,169,182)',
+          'rgb(80,7,32)',
+          'rgb(132,7,161)',
+          'rgb(236,31,16)',
+          'rgb(5,75,24)',
+        ],
+        borderColor: [
+          'rgb(3,252,37)',
+          'rgb(11,46,222)',
+          'rgb(144,169,182)',
+          'rgb(80,7,32)',
+          'rgb(132,7,161)',
+          'rgb(236,31,16)',
+          'rgb(5,75,24)',
+        ],
+        borderWidth: 1,
+        data: [
+            {{ alldares_values[8] }},
+            {{ alldares_values[9] }},
+            {{ alldares_values[12] }},
+            {{ alldares_values[15] }},
+            {{ alldares_values[17] }},
+            {{ alldares_values[20] }},
+            {{ alldares_values[21] }},
+
+        ]
+      }]
+    },
+    options: {}
+  });
+</script>
+
+<h4 class="subtitle">Dares of Eternity Stats Secondary Weapons</h4>
+<section id="section5">
+<canvas id="secondary-pie-chart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var daresChart = document.getElementById('secondary-pie-chart').getContext('2d');
+  var chart = new Chart(daresChart, {
+    type: 'pie',
+    data: {
+      labels: ['Glaive', 'Fusion Rifle', 'Trace Rifle', 'Shotgun','Sniper Rifle'],
+      datasets: [{
+        label: 'Secondary Weapon Kills',
+        backgroundColor: [
+          'rgb(252,107,3)',
+          'rgb(203,129,173)',
+          'rgb(7,255,250)',
+          'rgb(16,26,211)',
+          'rgb(140,231,13)',
+        ],
+        borderColor: [
+          'rgb(252,107,3)',
+          'rgb(203,129,173)',
+          'rgb(7,255,250)',
+          'rgb(16,26,211)',
+          'rgb(140,231,13)',
+        ],
+        borderWidth: 1,
+        data: [
+            {{ alldares_values[10] }},
+            {{ alldares_values[11] }},
+            {{ alldares_values[13] }},
+            {{ alldares_values[18] }},
+            {{ alldares_values[19] }},
+        ]
+      }]
+    },
+    options: {}
+  });
+</script>
+
+<h4 class="subtitle">Dares of Eternity Stats Heavy Weapons</h4>
+<section id="section6">
+<canvas id="heavy-pie-chart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var daresChart = document.getElementById('heavy-pie-chart').getContext('2d');
+  var chart = new Chart(daresChart, {
+    type: 'pie',
+    data: {
+      labels: ['Machinegun', 'Rocket Launcher', 'Sword', 'Grenade Launcher'],
+      datasets: [{
+        label: 'Heavy Weapon Kills',
+        backgroundColor: [
+          'rgb(173,1,178)',
+          'rgb(211,0,14)',
+          'rgb(49,124,227)',
+          'rgb(4,220,104)',
+        ],
+        borderColor: [
+          'rgb(173,1,178)',
+          'rgb(211,0,14)',
+          'rgb(49,124,227)',
+          'rgb(4,220,104)',
+        ],
+        borderWidth: 1,
+        data: [
+            {{ alldares_values[14] }},
+            {{ alldares_values[16] }},
+            {{ alldares_values[22] }},
+            {{ alldares_values[23] }},
+        ]
+      }]
+    },
+    options: {}
+  });
+</script>
+</html>

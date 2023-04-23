@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Strike Stats</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='page.css') }}">
+    <script>
+        function resetPage() {
+            location.reload(true);
+        }
+        window.onunload = resetPage;
+    </script>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+<h1 class="title">Strike Stats Data</h1>
+<div class="links">
+<a class="section-title" href="#link">Links</a>
+<a class="section-link" href="#section1">Strike Line Graph</a>
+<a class="section-link" href="#section2">Strike Bar Chart</a>
+<a class="section-link" href="#section3">Strike Resurrections</a>
+<a class="section-link" href="#section4">Strike Primary Weapons</a>
+<a class="section-link" href="#section5">Strike Secondary Weapons</a>
+<a class="section-link" href="#section6">Strike Heavy Weapons</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Kills</th>
+                <th>Deaths</th>
+                <th>Assists</th>
+                <th>K/D Ratio</th>
+                <th>K/D/A Ratio</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in strike_values %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1]|float|round(2) }}</td>
+                <td>{{ row[2]|float|round(2) }}</td>
+                <td>{{ row[3]|float|round(2) }}</td>
+                <td>{{ row[4]|float|round(2) }}</td>
+                <td>{{ row[5]|float|round(2) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    <form action="{{ url_for('download_table') }}" method="post">
+        <input type="hidden" name="table_values" value="{{ strike_values }}">
+        <button type="submit">Download Table</button>
+    </form>
+
+<h4 class="subtitle">Strike Stats Line Graph</h4>
+<section id="section1">
+</section>
+{% if strike_values %}
+  <canvas id="strike-chart"></canvas>
+{% endif %}
+{% if strike_values %}
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+  <script>
+    // get the canvas element
+    var strikeChart = document.getElementById('strike-chart').getContext('2d');
+
+    // create the chart
+    var myChart = new Chart(strikeChart, {
+      type: 'line',
+      data: {
+        labels: [{% for row in strike_values %}"{{ row[0] }}", {% endfor %}],
+        datasets: [{
+          label: 'Kills',
+          data: [{% for row in strike_values %}{{ row[1] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgb(248,105,135)',
+          borderWidth: 1
+        }, {
+          label: 'Deaths',
+          data: [{% for row in strike_values %}{{ row[2] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        },
+        {
+          label: 'Assists',
+          data: [{% for row in strike_values %}{{ row[3] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgb(225,3,3)',
+          borderWidth: 1
+        },
+        {
+          label: 'K/D Ratio',
+          data: [{% for row in strike_values %}{{ row[4] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgb(54,235,69)',
+          borderWidth: 1
+        },
+        {
+          label: 'K/D/A Ratio',
+          data: [{% for row in strike_values %}{{ row[5] }}, {% endfor %}],
+          backgroundColor: 'transparent',
+          borderColor: 'rgb(184,54,235)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+
+  </script>
+
+{% endif %}
+<section id="section2">
+</section>
+  <h4 class="subtitle">Strike Stats Bar Chart</h4>
+  <canvas id="strike-bar-chart"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    var strikeBarChart = document.getElementById('strike-bar-chart').getContext('2d');
+    var chart = new Chart(strikeBarChart, {
+      type: 'bar',
+      data: {
+        labels: ['Kills', 'Deaths', 'Assists'],
+        datasets: [{
+          label: 'All Strike Values',
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(153, 102, 255, 0.2)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)'
+          ],
+          borderWidth: 1,
+          data: [
+              {{ allstrike_values[0] }},
+              {{ allstrike_values[1] }},
+              {{ allstrike_values[2] }},
+          ]
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+
+  </script>
+
+<section id="section3">
+</section>
+<h4 class="subtitle">Strike Stats Resurrections</h4>
+<canvas id="rez-pie-chart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var strikePieChart = document.getElementById('rez-pie-chart').getContext('2d');
+  var chart = new Chart(strikePieChart, {
+    type: 'pie',
+    data: {
+      labels: ['Resurrections Performed', 'Resurrections Received'],
+      datasets: [{
+        label: 'Resurrection Values',
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+        ],
+        borderWidth: 1,
+        data: [
+            {{ allstrike_values[6] }},
+            {{ allstrike_values[7] }},
+        ]
+      }]
+    },
+    options: {}
+  });
+
+</script>
+
+<section id="section4">
+</section>
+<h4 class="subtitle">Strike Stats Primary Weapons</h4>
+<canvas id="primary-pie-chart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var strikePieChart = document.getElementById('primary-pie-chart').getContext('2d');
+  var chart = new Chart(strikePieChart, {
+    type: 'pie',
+    data: {
+      labels: ['Auto Rifle', 'Bow', 'Hand Cannon', 'Pulse Rifle','Scout Rifle', 'Submachinegun', 'Sidearm'],
+      datasets: [{
+        label: 'Primary Weapon Kills',
+        backgroundColor: [
+          'rgb(3,252,37)',
+          'rgb(11,46,222)',
+          'rgb(144,169,182)',
+          'rgb(80,7,32)',
+          'rgb(132,7,161)',
+          'rgb(236,31,16)',
+          'rgb(5,75,24)',
+        ],
+        borderColor: [
+          'rgb(3,252,37)',
+          'rgb(11,46,222)',
+          'rgb(144,169,182)',
+          'rgb(80,7,32)',
+          'rgb(132,7,161)',
+          'rgb(236,31,16)',
+          'rgb(5,75,24)',
+        ],
+        borderWidth: 1,
+        data: [
+            {{ allstrike_values[8] }},
+            {{ allstrike_values[9] }},
+            {{ allstrike_values[12] }},
+            {{ allstrike_values[15] }},
+            {{ allstrike_values[17] }},
+            {{ allstrike_values[20] }},
+            {{ allstrike_values[21] }},
+
+        ]
+      }]
+    },
+    options: {}
+  });
+
+</script>
+<section id="section5">
+</section>
+<h4 class="subtitle">Strike Stats Secondary Weapons</h4>
+<canvas id="secondary-pie-chart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var strikePieChart = document.getElementById('secondary-pie-chart').getContext('2d');
+  var chart = new Chart(strikePieChart, {
+    type: 'pie',
+    data: {
+      labels: ['Glaive', 'Fusion Rifle', 'Trace Rifle', 'Shotgun','Sniper Rifle'],
+      datasets: [{
+        label: 'Secondary Weapon Kills',
+        backgroundColor: [
+          'rgb(252,107,3)',
+          'rgb(203,129,173)',
+          'rgb(7,255,250)',
+          'rgb(16,26,211)',
+          'rgb(140,231,13)',
+        ],
+        borderColor: [
+          'rgb(252,107,3)',
+          'rgb(203,129,173)',
+          'rgb(7,255,250)',
+          'rgb(16,26,211)',
+          'rgb(140,231,13)',
+        ],
+        borderWidth: 1,
+        data: [
+            {{ allstrike_values[10] }},
+            {{ allstrike_values[11] }},
+            {{ allstrike_values[13] }},
+            {{ allstrike_values[18] }},
+            {{ allstrike_values[19] }},
+        ]
+      }]
+    },
+    options: {}
+  });
+</script>
+
+<section id="section6">
+</section>
+<h4 class="subtitle">Strike Stats Heavy Weapons</h4>
+<canvas id="heavy-pie-chart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var strikePieChart = document.getElementById('heavy-pie-chart').getContext('2d');
+  var chart = new Chart(strikePieChart, {
+    type: 'pie',
+    data: {
+      labels: ['Machinegun', 'Rocket Launcher', 'Sword', 'Grenade Launcher'],
+      datasets: [{
+        label: 'Heavy Weapon Kills',
+        backgroundColor: [
+          'rgb(173,1,178)',
+          'rgb(211,0,14)',
+          'rgb(49,124,227)',
+          'rgb(4,220,104)',
+        ],
+        borderColor: [
+          'rgb(173,1,178)',
+          'rgb(211,0,14)',
+          'rgb(49,124,227)',
+          'rgb(4,220,104)',
+        ],
+        borderWidth: 1,
+        data: [
+            {{ allstrike_values[14] }},
+            {{ allstrike_values[16] }},
+            {{ allstrike_values[22] }},
+            {{ allstrike_values[23] }},
+        ]
+      }]
+    },
+    options: {}
+  });
+
+</script>
+
+
+
+
